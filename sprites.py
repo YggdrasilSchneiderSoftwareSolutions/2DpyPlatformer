@@ -1,4 +1,5 @@
 # Sprite classes for platform game
+from abc import ABCMeta, abstractmethod
 import pygame as pg
 import utils
 from settings import *
@@ -33,6 +34,7 @@ class Player(pg.sprite.Sprite):
                            utils.load_image('tiles/player/player_run_10.png')]
         self.jump_image = utils.load_image('tiles/player/pl_jump.png')
         self.fall_image = utils.load_image('tiles/player/pl_fall.png')
+        self.killed_image = utils.load_image('tiles/player/pl_death.png')
         self.image = self.idle_images[0]
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH / 2, HEIGHT / 2)
@@ -43,6 +45,8 @@ class Player(pg.sprite.Sprite):
         self.coins = 0
         self.health = PLAYER_HEALTH
         self.num_frames = 0
+        self.num_dead_frames = 0
+        self.game_over = False
 
     def get_image(self):  # TODO: in Game auslagern
         self.num_frames += 1
@@ -127,10 +131,16 @@ class Player(pg.sprite.Sprite):
     def update(self):
         # game over
         if self.health <= 0:
-            pg.mixer.music.stop()
-            utils.play_sound('death')
-            self.game.playing = False
-            pg.time.delay(2000)
+            self.num_dead_frames += 1
+            if not self.game_over:  # Damit Sound nur 1x abgespielt wird
+                self.game_over = True
+                pg.mixer.music.stop()
+                utils.play_sound('death')
+            #pg.time.delay(2000)
+            self.image = self.killed_image
+            if self.num_dead_frames == FPS * 5:  # ca. 5 Sekunden
+                self.game.playing = False
+            return
 
         self.movement[1] += self.gravity
         self.gravity += PLAYER_GRAV
@@ -158,86 +168,50 @@ class Player(pg.sprite.Sprite):
             self.rect.x = self.game.map.width - TILESIZE
 
 
-class Enemy(pg.sprite.Sprite):  # TODO: von Superklasse ableiten
+class Enemy(pg.sprite.Sprite, metaclass=ABCMeta):
     def __init__(self, x, y, game):
         pg.sprite.Sprite.__init__(self)
-        self.idle_images = [utils.load_image('tiles/enemies/pinky/pink_idle_00.png'),
-                            utils.load_image('tiles/enemies/pinky/pink_idle_01.png'),
-                            utils.load_image('tiles/enemies/pinky/pink_idle_02.png'),
-                            utils.load_image('tiles/enemies/pinky/pink_idle_03.png'),
-                            utils.load_image('tiles/enemies/pinky/pink_idle_04.png'),
-                            utils.load_image('tiles/enemies/pinky/pink_idle_05.png'),
-                            utils.load_image('tiles/enemies/pinky/pink_idle_06.png'),
-                            utils.load_image('tiles/enemies/pinky/pink_idle_07.png'),
-                            utils.load_image('tiles/enemies/pinky/pink_idle_08.png'),
-                            utils.load_image('tiles/enemies/pinky/pink_idle_09.png'),
-                            utils.load_image('tiles/enemies/pinky/pink_idle_10.png')]
-        self.run_images = [utils.load_image('tiles/enemies/pinky/pink_run_00.png'),
-                           utils.load_image('tiles/enemies/pinky/pink_run_01.png'),
-                           utils.load_image('tiles/enemies/pinky/pink_run_02.png'),
-                           utils.load_image('tiles/enemies/pinky/pink_run_03.png'),
-                           utils.load_image('tiles/enemies/pinky/pink_run_04.png'),
-                           utils.load_image('tiles/enemies/pinky/pink_run_05.png'),
-                           utils.load_image('tiles/enemies/pinky/pink_run_06.png'),
-                           utils.load_image('tiles/enemies/pinky/pink_run_07.png'),
-                           utils.load_image('tiles/enemies/pinky/pink_run_08.png'),
-                           utils.load_image('tiles/enemies/pinky/pink_run_09.png'),
-                           utils.load_image('tiles/enemies/pinky/pink_run_10.png')]
-        self.killed_image = utils.load_image('tiles/enemies/pinky/pink_hit_4.png')
-        self.image = self.idle_images[0]
+        self.image = pg.Surface((TILESIZE, TILESIZE))
         self.rect = self.image.get_rect()
         self.rect.x = x * TILESIZE
         self.rect.y = y * TILESIZE
         self.initial_pos_x = self.rect.x
         self.x = x
         self.y = y
-        self.solid = False
         self.game = game
         self.visibility = -200
         self.damage = 10
+        self.acceleration = 2
         self.move_direction = {'left': False, 'right': False}
         self.killed = False
         self.num_frames = 0
         self.num_dead_frames = 0
+        self.image = None
+        self.solid = False
 
-    def get_image(self):  # TODO: in Game auslagern
-        # Tot
-        if self.killed:
-            self.num_dead_frames += 1
-            self.image = self.killed_image
-            if self.num_dead_frames == 10:
-                self.kill()
-            return
-
-        self.num_frames += 1
-        if self.num_frames == FPS:
-            self.num_frames = 0
-
-        # Gehen / Stehen
-        if self.move_direction['left'] is False and self.move_direction['right'] is False:
-            self.image = utils.get_image_for_frames(self.num_frames, self.idle_images)
-        else:
-            self.image = utils.get_image_for_frames(self.num_frames, self.run_images)
+    @abstractmethod
+    def get_image(self):
+        pass
 
     def update(self):
         is_visible, distance_x = self.player_is_visible()
         if is_visible is True:
             can_move = self.check_collision()
             if distance_x < 0 and can_move:  # Player ist links
-                self.rect.x -= ENEMY_ACC
+                self.rect.x -= self.acceleration
                 self.move_direction['left'] = True
                 self.move_direction['right'] = False
             elif distance_x > 0 and can_move:  # Player ist rechts
-                self.rect.x += ENEMY_ACC
+                self.rect.x += self.acceleration
                 self.move_direction['left'] = False
                 self.move_direction['right'] = True
         else:  # zurückbewegen, wenn Player nicht mehr sichtbar
             if self.rect.x > self.initial_pos_x:
-                self.rect.x -= ENEMY_ACC
+                self.rect.x -= self.acceleration
                 self.move_direction['left'] = True
                 self.move_direction['right'] = False
             elif self.rect.x < self.initial_pos_x:
-                self.rect.x += ENEMY_ACC
+                self.rect.x += self.acceleration
                 self.move_direction['left'] = False
                 self.move_direction['right'] = True
 
@@ -276,6 +250,54 @@ class Enemy(pg.sprite.Sprite):  # TODO: von Superklasse ableiten
         if wall_hits or not on_ground or player_hit:
             return False
         return True
+
+
+class Enemy1(Enemy):
+    def __init__(self, x, y, game):
+        Enemy.__init__(self, x, y, game)
+        self.idle_images = [utils.load_image('tiles/enemies/pinky/pink_idle_00.png'),
+                            utils.load_image('tiles/enemies/pinky/pink_idle_01.png'),
+                            utils.load_image('tiles/enemies/pinky/pink_idle_02.png'),
+                            utils.load_image('tiles/enemies/pinky/pink_idle_03.png'),
+                            utils.load_image('tiles/enemies/pinky/pink_idle_04.png'),
+                            utils.load_image('tiles/enemies/pinky/pink_idle_05.png'),
+                            utils.load_image('tiles/enemies/pinky/pink_idle_06.png'),
+                            utils.load_image('tiles/enemies/pinky/pink_idle_07.png'),
+                            utils.load_image('tiles/enemies/pinky/pink_idle_08.png'),
+                            utils.load_image('tiles/enemies/pinky/pink_idle_09.png'),
+                            utils.load_image('tiles/enemies/pinky/pink_idle_10.png')]
+        self.run_images = [utils.load_image('tiles/enemies/pinky/pink_run_00.png'),
+                           utils.load_image('tiles/enemies/pinky/pink_run_01.png'),
+                           utils.load_image('tiles/enemies/pinky/pink_run_02.png'),
+                           utils.load_image('tiles/enemies/pinky/pink_run_03.png'),
+                           utils.load_image('tiles/enemies/pinky/pink_run_04.png'),
+                           utils.load_image('tiles/enemies/pinky/pink_run_05.png'),
+                           utils.load_image('tiles/enemies/pinky/pink_run_06.png'),
+                           utils.load_image('tiles/enemies/pinky/pink_run_07.png'),
+                           utils.load_image('tiles/enemies/pinky/pink_run_08.png'),
+                           utils.load_image('tiles/enemies/pinky/pink_run_09.png'),
+                           utils.load_image('tiles/enemies/pinky/pink_run_10.png')]
+        self.killed_image = utils.load_image('tiles/enemies/pinky/pink_hit_4.png')
+        self.image = self.idle_images[0]
+
+    def get_image(self):
+        # Tot
+        if self.killed:
+            self.num_dead_frames += 1
+            self.image = self.killed_image
+            if self.num_dead_frames == 10:
+                self.kill()
+            return
+
+        self.num_frames += 1  # TODO: in Methode der Superklasse auslagern
+        if self.num_frames == FPS:
+            self.num_frames = 0
+
+        # Gehen / Stehen
+        if self.move_direction['left'] is False and self.move_direction['right'] is False:
+            self.image = utils.get_image_for_frames(self.num_frames, self.idle_images)
+        else:
+            self.image = utils.get_image_for_frames(self.num_frames, self.run_images)
 
 
 class Tile(pg.sprite.Sprite):

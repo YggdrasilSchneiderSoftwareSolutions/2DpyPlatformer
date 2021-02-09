@@ -14,9 +14,6 @@ PLAYER_GRAV = 0.8
 PLAYER_JUMP = 15
 PLAYER_HEALTH = 100
 
-# Enemy properties
-ENEMY_ACC = 2
-
 # define colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)

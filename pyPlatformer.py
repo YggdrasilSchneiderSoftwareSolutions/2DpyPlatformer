@@ -34,6 +34,8 @@ class Game:
         self.img_health = self.font_health.render('Health: ', True, WHITE)
         self.font_coins = pg.font.Font(None, 24)
         self.img_coins = self.font_coins.render('Coins: ', True, WHITE)
+        self.font_game_over = pg.font.Font(None, 144)
+        self.img_game_over = self.font_game_over.render('Game Over', True, RED)
 
     def new(self):
         pg.mixer.music.load('music/game.mp3')
@@ -62,7 +64,7 @@ class Game:
                     tile_sprite = Coin(col, row)
                     self.collectibles.add(tile_sprite)
                 elif tile == "E":  # Enemy
-                    tile_sprite = Enemy(col, row, self)
+                    tile_sprite = Enemy1(col, row, self)
                     self.enemies.add(tile_sprite)
                 else:  # Sky
                     tile_sprite = Sky(col, row)
@@ -122,6 +124,8 @@ class Game:
         self.screen.blit(self.img_health, (10, 10))
         self.img_coins = self.font_health.render('Coins: ' + str(self.player.coins), True, WHITE)
         self.screen.blit(self.img_coins, (10, 35))
+        if self.player.game_over:
+            self.screen.blit(self.img_game_over, (220, 200))
         # Player am Schluss, damit im Vordergrund
         self.screen.blit(self.player.image, self.camera.apply(self.player))
         # after drawing everything, flip the display
