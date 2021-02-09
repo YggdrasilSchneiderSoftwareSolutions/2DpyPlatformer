@@ -48,7 +48,7 @@ class Player(pg.sprite.Sprite):
         self.num_dead_frames = 0
         self.game_over = False
 
-    def get_image(self):  # TODO: in Game auslagern
+    def get_image(self):
         self.num_frames += 1
         if self.num_frames == FPS:
             self.num_frames = 0
@@ -64,6 +64,10 @@ class Player(pg.sprite.Sprite):
                 self.image = self.jump_image
             else:
                 self.image = self.fall_image
+
+        # Drehen für links
+        if self.movement[0] < 0:
+            self.image = pg.transform.flip(self.image, True, False)
 
     def jump(self):
         # jump only if standing on a platform
@@ -109,10 +113,8 @@ class Player(pg.sprite.Sprite):
         pickup_hits = pg.sprite.spritecollide(self, self.game.collectibles, False)
         if pickup_hits:
             for pickup in pickup_hits:
-                if type(pickup) == Coin:
-                    utils.play_sound('coin')
-                    pickup.kill()
-                    self.coins += 1
+                pickup.on_collect()
+                pickup.kill()
 
     def check_enemy_hit(self):
         enemy_hits = pg.sprite.spritecollide(self, self.game.enemies, False)
@@ -136,7 +138,6 @@ class Player(pg.sprite.Sprite):
                 self.game_over = True
                 pg.mixer.music.stop()
                 utils.play_sound('death')
-            #pg.time.delay(2000)
             self.image = self.killed_image
             if self.num_dead_frames == FPS * 5:  # ca. 5 Sekunden
                 self.game.playing = False
@@ -205,6 +206,9 @@ class Enemy(pg.sprite.Sprite, metaclass=ABCMeta):
                 self.rect.x += self.acceleration
                 self.move_direction['left'] = False
                 self.move_direction['right'] = True
+            else:  # Hinderniss, stehen bleiben
+                self.move_direction['left'] = False
+                self.move_direction['right'] = False
         else:  # zurückbewegen, wenn Player nicht mehr sichtbar
             if self.rect.x > self.initial_pos_x:
                 self.rect.x -= self.acceleration
@@ -238,6 +242,7 @@ class Enemy(pg.sprite.Sprite, metaclass=ABCMeta):
             self.rect.x += TILESIZE
         elif self.move_direction['left']:
             self.rect.x -= TILESIZE
+        # FIXME: Manche Sprites sind so schnell, dass sie immer Platform berühren und damit nicht stehen bleiben
         on_ground = pg.sprite.spritecollide(self, self.game.platforms, False)
         self.rect.y -= 1
         if self.move_direction['right']:
@@ -252,7 +257,7 @@ class Enemy(pg.sprite.Sprite, metaclass=ABCMeta):
         return True
 
 
-class Enemy1(Enemy):
+class EnemyPinky(Enemy):
     def __init__(self, x, y, game):
         Enemy.__init__(self, x, y, game)
         self.idle_images = [utils.load_image('tiles/enemies/pinky/pink_idle_00.png'),
@@ -277,7 +282,7 @@ class Enemy1(Enemy):
                            utils.load_image('tiles/enemies/pinky/pink_run_08.png'),
                            utils.load_image('tiles/enemies/pinky/pink_run_09.png'),
                            utils.load_image('tiles/enemies/pinky/pink_run_10.png')]
-        self.killed_image = utils.load_image('tiles/enemies/pinky/pink_hit_4.png')
+        self.killed_image = utils.load_image('tiles/enemies/pinky/pink_death.png')
         self.image = self.idle_images[0]
 
     def get_image(self):
@@ -297,7 +302,66 @@ class Enemy1(Enemy):
         if self.move_direction['left'] is False and self.move_direction['right'] is False:
             self.image = utils.get_image_for_frames(self.num_frames, self.idle_images)
         else:
-            self.image = utils.get_image_for_frames(self.num_frames, self.run_images)
+            if self.move_direction['left'] is True:
+                self.image = pg.transform.flip(utils.get_image_for_frames(self.num_frames,
+                                                                          self.run_images), True, False)
+            else:
+                self.image = utils.get_image_for_frames(self.num_frames, self.run_images)
+
+
+class EnemyMasked(Enemy):
+    def __init__(self, x, y, game):
+        Enemy.__init__(self, x, y, game)
+        self.idle_images = [utils.load_image('tiles/enemies/masked/masked_idle_00.png'),
+                            utils.load_image('tiles/enemies/masked/masked_idle_01.png'),
+                            utils.load_image('tiles/enemies/masked/masked_idle_02.png'),
+                            utils.load_image('tiles/enemies/masked/masked_idle_03.png'),
+                            utils.load_image('tiles/enemies/masked/masked_idle_04.png'),
+                            utils.load_image('tiles/enemies/masked/masked_idle_05.png'),
+                            utils.load_image('tiles/enemies/masked/masked_idle_06.png'),
+                            utils.load_image('tiles/enemies/masked/masked_idle_07.png'),
+                            utils.load_image('tiles/enemies/masked/masked_idle_08.png'),
+                            utils.load_image('tiles/enemies/masked/masked_idle_09.png'),
+                            utils.load_image('tiles/enemies/masked/masked_idle_10.png')]
+        self.run_images = [utils.load_image('tiles/enemies/masked/masked_run_00.png'),
+                           utils.load_image('tiles/enemies/masked/masked_run_01.png'),
+                           utils.load_image('tiles/enemies/masked/masked_run_02.png'),
+                           utils.load_image('tiles/enemies/masked/masked_run_03.png'),
+                           utils.load_image('tiles/enemies/masked/masked_run_04.png'),
+                           utils.load_image('tiles/enemies/masked/masked_run_05.png'),
+                           utils.load_image('tiles/enemies/masked/masked_run_06.png'),
+                           utils.load_image('tiles/enemies/masked/masked_run_07.png'),
+                           utils.load_image('tiles/enemies/masked/masked_run_08.png'),
+                           utils.load_image('tiles/enemies/masked/masked_run_09.png'),
+                           utils.load_image('tiles/enemies/masked/masked_run_10.png')]
+        self.killed_image = utils.load_image('tiles/enemies/masked/masked_death.png')
+        self.image = self.idle_images[0]
+        self.visibility = -300
+        self.damage = 20
+        self.acceleration = 3
+
+    def get_image(self):
+        # Tot
+        if self.killed:
+            self.num_dead_frames += 1
+            self.image = self.killed_image
+            if self.num_dead_frames == 10:
+                self.kill()
+            return
+
+        self.num_frames += 1  # TODO: in Methode der Superklasse auslagern
+        if self.num_frames == FPS:
+            self.num_frames = 0
+
+        # Gehen / Stehen
+        if self.move_direction['left'] is False and self.move_direction['right'] is False:
+            self.image = utils.get_image_for_frames(self.num_frames, self.idle_images)
+        else:
+            if self.move_direction['left'] is True:
+                self.image = pg.transform.flip(utils.get_image_for_frames(self.num_frames,
+                                                                          self.run_images), True, False)
+            else:
+                self.image = utils.get_image_for_frames(self.num_frames, self.run_images)
 
 
 class Tile(pg.sprite.Sprite):
@@ -342,9 +406,19 @@ class Sky(Tile):
         self.image.set_colorkey(BLUE)
 
 
-class Coin(Tile):
-    def __init__(self, x, y):
+class Collectible(Tile, metaclass=ABCMeta):
+    def __init__(self, x, y, player):
         Tile.__init__(self, x, y)
+        self.player = player
+
+    @abstractmethod
+    def on_collect(self):
+        pass
+
+
+class Coin(Collectible):
+    def __init__(self, x, y, player):
+        Collectible.__init__(self, x, y, player)
         self.num_frames = 0
         self.rotating_images = [utils.load_image('tiles/coin_00.png'),
                                 utils.load_image('tiles/coin_01.png'),
@@ -353,6 +427,10 @@ class Coin(Tile):
                                 utils.load_image('tiles/coin_04.png'),
                                 utils.load_image('tiles/coin_05.png')]
         self.image = self.rotating_images[0]
+
+    def on_collect(self):
+        utils.play_sound('coin')
+        self.player.coins += 1
 
     def get_image(self):  # TODO: in Game auslagern
         self.num_frames += 1
@@ -363,3 +441,33 @@ class Coin(Tile):
 
     def update(self):
         self.get_image()
+
+
+class Strawberry(Collectible):
+    def __init__(self, x, y, player):
+        Collectible.__init__(self, x, y, player)
+        self.image = utils.load_image('tiles/strawberry.png')
+
+    def on_collect(self):
+        utils.play_sound('collect')
+        self.player.health += 20
+
+
+class Banana(Collectible):
+    def __init__(self, x, y, player):
+        Collectible.__init__(self, x, y, player)
+        self.image = utils.load_image('tiles/banana.png')
+
+    def on_collect(self):
+        utils.play_sound('collect')
+        self.player.health += 50
+
+
+class Cherry(Collectible):
+    def __init__(self, x, y, player):
+        Collectible.__init__(self, x, y, player)
+        self.image = utils.load_image('tiles/cherry.png')
+
+    def on_collect(self):
+        utils.play_sound('collect')
+        self.player.health += 10

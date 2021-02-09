@@ -61,10 +61,22 @@ class Game:
                 elif tile == "B":  # Brick
                     tile_sprite = Brick(col, row)
                 elif tile == "o":  # Coin
-                    tile_sprite = Coin(col, row)
+                    tile_sprite = Coin(col, row, self.player)
                     self.collectibles.add(tile_sprite)
-                elif tile == "E":  # Enemy
-                    tile_sprite = Enemy1(col, row, self)
+                elif tile == "S":  # Strawberry
+                    tile_sprite = Strawberry(col, row, self.player)
+                    self.collectibles.add(tile_sprite)
+                elif tile == "(":  # Banana
+                    tile_sprite = Banana(col, row, self.player)
+                    self.collectibles.add(tile_sprite)
+                elif tile == "C":  # Cherry
+                    tile_sprite = Cherry(col, row, self.player)
+                    self.collectibles.add(tile_sprite)
+                elif tile == "P":  # Enemy Pinky
+                    tile_sprite = EnemyPinky(col, row, self)
+                    self.enemies.add(tile_sprite)
+                elif tile == "M":  # Enemy Masked
+                    tile_sprite = EnemyMasked(col, row, self)
                     self.enemies.add(tile_sprite)
                 else:  # Sky
                     tile_sprite = Sky(col, row)

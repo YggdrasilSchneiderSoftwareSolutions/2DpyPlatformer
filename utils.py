@@ -40,6 +40,7 @@ def init_sounds():
     SOUNDS['kill'] = pygame.mixer.Sound('sounds/kill.wav')
     SOUNDS['hurt'] = pygame.mixer.Sound('sounds/hurt.wav')
     SOUNDS['death'] = pygame.mixer.Sound('sounds/death.wav')
+    SOUNDS['collect'] = pygame.mixer.Sound('sounds/collect.wav')
 
 
 def play_sound(name):
