@@ -18,7 +18,7 @@ class Map:
     def get_tile(self, x, y):
         x = int(x / TILESIZE)
         y = int(y / TILESIZE)
-        if x >= 0 and x < self.tilewidth and y >= 0 and y <  self.tileheight:
+        if x >= 0 and x < self.tile_width and y >= 0 and y <  self.tile_height:
             return self.data[y][x]
         else:
             return " "

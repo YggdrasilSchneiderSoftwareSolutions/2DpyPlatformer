@@ -197,12 +197,13 @@ class Enemy(pg.sprite.Sprite, metaclass=ABCMeta):
     def update(self):
         is_visible, distance_x = self.player_is_visible()
         if is_visible is True:
-            can_move = self.check_collision()
-            if distance_x < 0 and can_move:  # Player ist links
+            player_direction_left = distance_x < 0
+            can_move = self.check_collision(player_direction_left)
+            if player_direction_left and can_move:  # Player ist links
                 self.rect.x -= self.acceleration
                 self.move_direction['left'] = True
                 self.move_direction['right'] = False
-            elif distance_x > 0 and can_move:  # Player ist rechts
+            elif not player_direction_left and can_move:  # Player ist rechts
                 self.rect.x += self.acceleration
                 self.move_direction['left'] = False
                 self.move_direction['right'] = True
@@ -225,6 +226,8 @@ class Enemy(pg.sprite.Sprite, metaclass=ABCMeta):
             self.move_direction['right'] = False
 
         self.get_image()
+        self.x = self.rect.x / TILESIZE
+        self.y = self.rect.y / TILESIZE
 
     def player_is_visible(self):
         player_pos = self.game.player.rect
@@ -235,25 +238,50 @@ class Enemy(pg.sprite.Sprite, metaclass=ABCMeta):
             return True, player_distance_x
         return False, None
 
-    def check_collision(self):
+    def check_collision(self, player_dir_left):
         wall_hits = pg.sprite.spritecollide(self, self.game.platforms, False)
-        self.rect.y += 1
+        if wall_hits:
+            return False
+
+        on_ground = True
+        # Schauen, was 1 Tile weiter unten und GROUND_SNIFF_PIXEL weiter vorne ist
+        self.rect.y += TILESIZE
         if self.move_direction['right']:
-            self.rect.x += TILESIZE
+            self.rect.x += GROUND_SNIFF_PIXEL
         elif self.move_direction['left']:
-            self.rect.x -= TILESIZE
-        # FIXME: Manche Sprites sind so schnell, dass sie immer Platform berühren und damit nicht stehen bleiben
-        on_ground = pg.sprite.spritecollide(self, self.game.platforms, False)
-        self.rect.y -= 1
+            self.rect.x -= GROUND_SNIFF_PIXEL
+        else:
+            if player_dir_left:
+                self.rect.x -= GROUND_SNIFF_PIXEL
+            else:
+                self.rect.x += GROUND_SNIFF_PIXEL
+
+        ground_tiles = pg.sprite.spritecollide(self, self.game.all_sprites, False)
+        for tile in ground_tiles:
+            if not self.game.platforms.has(tile) and tile != self and tile.solid is False:
+                # Tile unten + vorne ist keine Platform, nicht self (wegen temp. Rect-Verschiebung) oder solid
+                on_ground = False
+                break
+
+        # Wieder auf Ausgangsposition
+        self.rect.y -= TILESIZE
         if self.move_direction['right']:
-            self.rect.x -= TILESIZE
+            self.rect.x -= GROUND_SNIFF_PIXEL
         elif self.move_direction['left']:
-            self.rect.x += TILESIZE
+            self.rect.x += GROUND_SNIFF_PIXEL
+        else:
+            if player_dir_left:
+                self.rect.x += GROUND_SNIFF_PIXEL
+            else:
+                self.rect.x -= GROUND_SNIFF_PIXEL
+
+        if not on_ground:
+            return False
 
         player_hit = self.rect.colliderect(self.game.player.rect)
-
-        if wall_hits or not on_ground or player_hit:
+        if player_hit:
             return False
+
         return True
 
 
