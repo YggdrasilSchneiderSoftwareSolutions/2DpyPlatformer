@@ -244,37 +244,16 @@ class Enemy(pg.sprite.Sprite, metaclass=ABCMeta):
             return False
 
         on_ground = True
-        # Schauen, was 1 Tile weiter unten und GROUND_SNIFF_PIXEL weiter vorne ist
+        # Schauen, was 1 Tile unter Enemy ist
         self.rect.y += TILESIZE
-        if self.move_direction['right']:
-            self.rect.x += GROUND_SNIFF_PIXEL
-        elif self.move_direction['left']:
-            self.rect.x -= GROUND_SNIFF_PIXEL
-        else:
-            if player_dir_left:
-                self.rect.x -= GROUND_SNIFF_PIXEL
-            else:
-                self.rect.x += GROUND_SNIFF_PIXEL
-
         ground_tiles = pg.sprite.spritecollide(self, self.game.all_sprites, False)
         for tile in ground_tiles:
             if not self.game.platforms.has(tile) and tile != self and tile.solid is False:
-                # Tile unten + vorne ist keine Platform, nicht self (wegen temp. Rect-Verschiebung) oder solid
+                # Tile unten ist keine Platform, nicht self (wegen temp. Rect-Verschiebung) oder solid
                 on_ground = False
                 break
-
         # Wieder auf Ausgangsposition
         self.rect.y -= TILESIZE
-        if self.move_direction['right']:
-            self.rect.x -= GROUND_SNIFF_PIXEL
-        elif self.move_direction['left']:
-            self.rect.x += GROUND_SNIFF_PIXEL
-        else:
-            if player_dir_left:
-                self.rect.x += GROUND_SNIFF_PIXEL
-            else:
-                self.rect.x -= GROUND_SNIFF_PIXEL
-
         if not on_ground:
             return False
 
