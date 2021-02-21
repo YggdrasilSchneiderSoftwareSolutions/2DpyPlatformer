@@ -13,7 +13,7 @@ class Game:
         # TODO: Evtl. Fullscreen?
         #self.screen = pg.display.set_mode((WIDTH, HEIGHT), pg.FULLSCREEN)
         pg.display.set_caption(TITLE)
-        pg.key.set_repeat(1, 30)
+        pg.key.set_repeat(0)
         # Fenster zentrieren
         os.environ['SDL_VIDEO_CENTERED'] = '1'
         self.clock = pg.time.Clock()
@@ -30,12 +30,17 @@ class Game:
         self.enemies = None
         self.collectibles = None
         self.player = None
-        self.font_health = pg.font.Font(None, 24)
+        self.font_health = pg.font.Font('font/font.ttf', 24)
         self.img_health = self.font_health.render('Health: ', True, WHITE)
-        self.font_coins = pg.font.Font(None, 24)
+        self.font_coins = pg.font.Font('font/font.ttf', 24)
         self.img_coins = self.font_coins.render('Coins: ', True, WHITE)
-        self.font_game_over = pg.font.Font(None, 144)
+        self.font_game_over = pg.font.Font('font/font.ttf', 144)
         self.img_game_over = self.font_game_over.render('Game Over', True, RED)
+        self.paused = False
+        self.font_paused = pg.font.Font('font/font.ttf', 144)
+        self.img_paused = self.font_paused.render('Pause', True, WHITE)
+        self.font_quit = pg.font.Font('font/font.ttf', 24)
+        self.img_quit = self.font_quit.render('q drücken zum Beenden', True, WHITE)
 
     def new(self):
         pg.mixer.music.load('music/game.mp3')
@@ -100,17 +105,20 @@ class Game:
         pg.mixer.music.fadeout(1000)
 
     def update(self):
+        if self.paused:
+            return
         # Game Loop - Update
         self.all_sprites.update()
         self.camera.update(self.player)
 
     def events(self):
         # Game Loop - events
-        keys = pg.key.get_pressed()
-        if keys[pg.K_LEFT]:
-            self.player.left()
-        if keys[pg.K_RIGHT]:
-            self.player.right()
+        if not self.paused:
+            keys = pg.key.get_pressed()
+            if keys[pg.K_LEFT]:
+                self.player.left()
+            if keys[pg.K_RIGHT]:
+                self.player.right()
         # Events for keyup and keydown
         for event in pg.event.get():
             # check for closing window
@@ -121,6 +129,13 @@ class Game:
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
                     self.player.jump()
+                if event.key == pg.K_ESCAPE:
+                    if not self.paused:
+                        self.paused = True
+                    else:
+                        self.paused = False
+                if event.key == pg.K_q:
+                    pg.event.post(pg.event.Event(pg.QUIT))
             if event.type == pg.KEYUP:
                 if event.key == pg.K_SPACE:
                     self.player.jump_cut()
@@ -137,7 +152,10 @@ class Game:
         self.img_coins = self.font_health.render('Coins: ' + str(self.player.coins), True, WHITE)
         self.screen.blit(self.img_coins, (10, 35))
         if self.player.game_over:
-            self.screen.blit(self.img_game_over, (220, 200))
+            self.screen.blit(self.img_game_over, (100, 200))
+        if self.paused:
+            self.screen.blit(self.img_paused, (220, 200))
+            self.screen.blit(self.img_quit, (20, 700))
         # Player am Schluss, damit im Vordergrund
         self.screen.blit(self.player.image, self.camera.apply(self.player))
         # after drawing everything, flip the display
@@ -155,14 +173,14 @@ class Game:
             self.clock.tick(FPS)
 
             if selected['Start'] is True:
-                font_start = pg.font.Font(None, 92)
+                font_start = pg.font.Font('font/font.ttf', 92)
                 img_start = font_start.render('Start!', True, WHITE)
-                font_quit = pg.font.Font(None, 72)
+                font_quit = pg.font.Font('font/font.ttf', 72)
                 img_quit = font_quit.render('Ende', True, WHITE)
             else:
-                font_start = pg.font.Font(None, 72)
+                font_start = pg.font.Font('font/font.ttf', 72)
                 img_start = font_start.render('Start', True, WHITE)
-                font_quit = pg.font.Font(None, 92)
+                font_quit = pg.font.Font('font/font.ttf', 92)
                 img_quit = font_quit.render('Ende', True, WHITE)
 
             # Events im Menü
@@ -189,19 +207,16 @@ class Game:
                             self.running = False
 
             self.screen.fill(BLACK)
-            self.screen.blit(img_start, (400, 300))
+            self.screen.blit(img_start, (250, 300))
             self.screen.blit(img_quit, (400, 400))
 
             pg.display.flip()
 
-    def show_go_screen(self):
-        # game over/continue
-        pass
 
+if __name__ == "__main__":
+    g = Game()
+    while g.running:
+        g.show_start_screen(g)
 
-g = Game()
-while g.running:
-    g.show_start_screen(g)
-
-pg.quit()
-exit(0)
+    pg.quit()
+    exit(0)
