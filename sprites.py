@@ -49,6 +49,7 @@ class Player(pg.sprite.Sprite):
         self.game_over = False
         self.won = False
         self.num_won_frames = 0
+        self.last_movement_left = False
 
     def get_image(self):
         self.num_frames += 1
@@ -68,7 +69,7 @@ class Player(pg.sprite.Sprite):
                 self.image = self.fall_image
 
         # Drehen für links
-        if self.movement[0] < 0:
+        if self.last_movement_left:
             self.image = pg.transform.flip(self.image, True, False)
 
     def jump(self):
@@ -85,9 +86,11 @@ class Player(pg.sprite.Sprite):
             
     def left(self):
         self.movement[0] -= PLAYER_ACC
+        self.last_movement_left = True
 
     def right(self):
         self.movement[0] += PLAYER_ACC
+        self.last_movement_left = False
 
     def move(self):
         collision_types = {'top': False, 'bottom': False, 'right': False, 'left': False}
