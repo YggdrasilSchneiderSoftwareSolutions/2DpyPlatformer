@@ -41,6 +41,9 @@ class Game:
         self.img_paused = self.font_paused.render('Pause', True, WHITE)
         self.font_quit = pg.font.Font(os.path.join(GAME_FOLDER, 'font', 'font.ttf'), 24)
         self.img_quit = self.font_quit.render('q drücken zum Beenden', True, WHITE)
+        self.font_won = pg.font.Font(os.path.join(GAME_FOLDER, 'font', 'font.ttf'), 144)
+        self.img_won = self.font_won.render('Sieg!', True, WHITE)
+        self.coin_count = 0
 
     def new(self):
         pg.mixer.music.load(os.path.join(GAME_FOLDER, 'music', 'game.mp3'))
@@ -68,6 +71,7 @@ class Game:
                 elif tile == "o":  # Coin
                     tile_sprite = Coin(col, row, self.player)
                     self.collectibles.add(tile_sprite)
+                    self.coin_count += 1
                 elif tile == "S":  # Strawberry
                     tile_sprite = Strawberry(col, row, self.player)
                     self.collectibles.add(tile_sprite)
@@ -156,6 +160,8 @@ class Game:
         if self.paused:
             self.screen.blit(self.img_paused, (220, 200))
             self.screen.blit(self.img_quit, (20, 700))
+        if self.player.won:
+            self.screen.blit(self.img_won, (330, 200))
         # Player am Schluss, damit im Vordergrund
         self.screen.blit(self.player.image, self.camera.apply(self.player))
         # after drawing everything, flip the display

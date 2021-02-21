@@ -47,6 +47,8 @@ class Player(pg.sprite.Sprite):
         self.num_frames = 0
         self.num_dead_frames = 0
         self.game_over = False
+        self.won = False
+        self.num_won_frames = 0
 
     def get_image(self):
         self.num_frames += 1
@@ -140,6 +142,17 @@ class Player(pg.sprite.Sprite):
                 play_sound('death')
             self.image = self.killed_image
             if self.num_dead_frames == FPS * 5:  # ca. 5 Sekunden
+                self.game.playing = False
+            return
+
+        # gewonnen
+        if self.coins == self.game.coin_count:
+            self.num_won_frames += 1
+            if not self.won:
+                self.won = True
+                pg.mixer.music.stop()
+                play_sound('won')
+            if self.num_won_frames == FPS * 5:
                 self.game.playing = False
             return
 
