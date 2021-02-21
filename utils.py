@@ -48,6 +48,7 @@ def init_sounds():
 
 
 def play_sound(name):
+    return
     global SOUNDS
     sound = SOUNDS[name]
     if sound is not None:

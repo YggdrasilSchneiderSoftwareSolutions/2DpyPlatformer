@@ -18,8 +18,10 @@ class Game:
         os.environ['SDL_VIDEO_CENTERED'] = '1'
         self.clock = pg.time.Clock()
         # Map laden
-        self.map = Map(os.path.join(GAME_FOLDER, 'maps', 'map1.txt'))
-        self.camera = Camera(self.map.width, self.map.height)
+        self.maps = [Map(os.path.join(GAME_FOLDER, 'maps', 'map1.txt')),
+                     Map(os.path.join(GAME_FOLDER, 'maps', 'map2.txt'))]
+        self.map = None
+        self.camera = None
         self.running = True
         # Hintergrund auf das gesamte Fenster vergrößern
         self.image = pg.transform.scale(load_image(os.path.join(GAME_FOLDER, 'tiles', 'background1.png')),
@@ -44,8 +46,12 @@ class Game:
         self.font_won = pg.font.Font(os.path.join(GAME_FOLDER, 'font', 'font.ttf'), 144)
         self.img_won = self.font_won.render('Sieg!', True, WHITE)
         self.coin_count = 0
+        self.level_index = 0
 
-    def new(self):
+    def new(self, level_map_index):
+        self.map = self.maps[level_map_index]
+        self.coin_count = 0
+
         pg.mixer.music.load(os.path.join(GAME_FOLDER, 'music', 'game.mp3'))
         pg.mixer.music.play(-1, 0.0)
         pg.mixer.music.set_volume(.5)
@@ -57,6 +63,8 @@ class Game:
         self.collectibles = pg.sprite.Group()
         self.player = Player(self)
         self.all_sprites.add(self.player)
+
+        self.camera = Camera(self.map.width, self.map.height)
 
         for row, tiles in enumerate(self.map.data):
             for col, tile in enumerate(tiles):
@@ -178,6 +186,17 @@ class Game:
         while self.running:
             self.clock.tick(FPS)
 
+            if self.player is not None and self.player.won:
+                self.level_index += 1
+                if self.level_index == len(self.maps):  # durchgespielt, zurück auf init
+                    self.player = None
+                    self.level_index = 0
+                    pg.mixer.music.load(os.path.join(GAME_FOLDER, 'music', 'menu.mp3'))
+                    pg.mixer.music.play(-1, 0.0)
+                    pg.mixer.music.set_volume(.5)
+                else:
+                    game.new(self.level_index)
+
             if selected['Start'] is True:
                 font_start = pg.font.Font(os.path.join(GAME_FOLDER, 'font', 'font.ttf'), 92)
                 img_start = font_start.render('Start!', True, WHITE)
@@ -204,10 +223,7 @@ class Game:
                     if event.key == pg.K_RETURN:
                         if selected['Start'] is True:
                             pg.mixer.music.fadeout(1000)
-                            game.new()
-                            pg.mixer.music.load(os.path.join(GAME_FOLDER, 'music', 'menu.mp3'))
-                            pg.mixer.music.play(-1, 0.0)
-                            pg.mixer.music.set_volume(.5)
+                            game.new(0)  # erstes Level laden
                         else:
                             pg.mixer.music.fadeout(1000)
                             self.running = False
