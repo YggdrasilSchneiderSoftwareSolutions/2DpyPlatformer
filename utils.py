@@ -1,6 +1,8 @@
 import pygame
 import settings
+import os
 
+GAME_FOLDER = os.path.dirname(__file__)
 
 SOUNDS = {}
 
@@ -35,12 +37,13 @@ def get_image_for_frames(num_frames, images_list):
 
 def init_sounds():
     global SOUNDS
-    SOUNDS['coin'] = pygame.mixer.Sound('sounds/coin.wav')
-    SOUNDS['jump'] = pygame.mixer.Sound('sounds/jump.wav')
-    SOUNDS['kill'] = pygame.mixer.Sound('sounds/kill.wav')
-    SOUNDS['hurt'] = pygame.mixer.Sound('sounds/hurt.wav')
-    SOUNDS['death'] = pygame.mixer.Sound('sounds/death.wav')
-    SOUNDS['collect'] = pygame.mixer.Sound('sounds/collect.wav')
+    global GAME_FOLDER
+    SOUNDS['coin'] = pygame.mixer.Sound(os.path.join(GAME_FOLDER, 'sounds', 'coin.wav'))
+    SOUNDS['jump'] = pygame.mixer.Sound(os.path.join(GAME_FOLDER, 'sounds', 'jump.wav'))
+    SOUNDS['kill'] = pygame.mixer.Sound(os.path.join(GAME_FOLDER, 'sounds', 'kill.wav'))
+    SOUNDS['hurt'] = pygame.mixer.Sound(os.path.join(GAME_FOLDER, 'sounds', 'hurt.wav'))
+    SOUNDS['death'] = pygame.mixer.Sound(os.path.join(GAME_FOLDER, 'sounds', 'death.wav'))
+    SOUNDS['collect'] = pygame.mixer.Sound(os.path.join(GAME_FOLDER, 'sounds', 'collect.wav'))
 
 
 def play_sound(name):

@@ -8,7 +8,7 @@ class Game:
         # initialize game window, etc
         pg.init()
         pg.mixer.init()
-        utils.init_sounds()
+        init_sounds()
         self.screen = pg.display.set_mode((WIDTH, HEIGHT))
         # TODO: Evtl. Fullscreen?
         #self.screen = pg.display.set_mode((WIDTH, HEIGHT), pg.FULLSCREEN)
@@ -18,32 +18,32 @@ class Game:
         os.environ['SDL_VIDEO_CENTERED'] = '1'
         self.clock = pg.time.Clock()
         # Map laden
-        game_folder = os.path.dirname(__file__)
-        self.map = Map(os.path.join(game_folder, 'maps/map1.txt'))
+        self.map = Map(os.path.join(GAME_FOLDER, 'maps', 'map1.txt'))
         self.camera = Camera(self.map.width, self.map.height)
         self.running = True
         # Hintergrund auf das gesamte Fenster vergrößern
-        self.image = pg.transform.scale(utils.load_image('tiles/background1.png'), (WIDTH, HEIGHT))
+        self.image = pg.transform.scale(load_image(os.path.join(GAME_FOLDER, 'tiles', 'background1.png')),
+                                        (WIDTH, HEIGHT))
         self.playing = False
         self.all_sprites = None
         self.platforms = None
         self.enemies = None
         self.collectibles = None
         self.player = None
-        self.font_health = pg.font.Font('font/font.ttf', 24)
+        self.font_health = pg.font.Font(os.path.join(GAME_FOLDER, 'font', 'font.ttf'), 24)
         self.img_health = self.font_health.render('Health: ', True, WHITE)
-        self.font_coins = pg.font.Font('font/font.ttf', 24)
+        self.font_coins = pg.font.Font(os.path.join(GAME_FOLDER, 'font', 'font.ttf'), 24)
         self.img_coins = self.font_coins.render('Coins: ', True, WHITE)
-        self.font_game_over = pg.font.Font('font/font.ttf', 144)
+        self.font_game_over = pg.font.Font(os.path.join(GAME_FOLDER, 'font', 'font.ttf'), 144)
         self.img_game_over = self.font_game_over.render('Game Over', True, RED)
         self.paused = False
-        self.font_paused = pg.font.Font('font/font.ttf', 144)
+        self.font_paused = pg.font.Font(os.path.join(GAME_FOLDER, 'font', 'font.ttf'), 144)
         self.img_paused = self.font_paused.render('Pause', True, WHITE)
-        self.font_quit = pg.font.Font('font/font.ttf', 24)
+        self.font_quit = pg.font.Font(os.path.join(GAME_FOLDER, 'font', 'font.ttf'), 24)
         self.img_quit = self.font_quit.render('q drücken zum Beenden', True, WHITE)
 
     def new(self):
-        pg.mixer.music.load('music/game.mp3')
+        pg.mixer.music.load(os.path.join(GAME_FOLDER, 'music', 'game.mp3'))
         pg.mixer.music.play(-1, 0.0)
         pg.mixer.music.set_volume(.5)
         # start a new game
@@ -162,7 +162,7 @@ class Game:
         pg.display.flip()
 
     def show_start_screen(self, game):
-        pg.mixer.music.load('music/menu.mp3')
+        pg.mixer.music.load(os.path.join(GAME_FOLDER, 'music', 'menu.mp3'))
         pg.mixer.music.play(-1, 0.0)
         pg.mixer.music.set_volume(.5)
 
@@ -173,14 +173,14 @@ class Game:
             self.clock.tick(FPS)
 
             if selected['Start'] is True:
-                font_start = pg.font.Font('font/font.ttf', 92)
+                font_start = pg.font.Font(os.path.join(GAME_FOLDER, 'font', 'font.ttf'), 92)
                 img_start = font_start.render('Start!', True, WHITE)
-                font_quit = pg.font.Font('font/font.ttf', 72)
+                font_quit = pg.font.Font(os.path.join(GAME_FOLDER, 'font', 'font.ttf'), 72)
                 img_quit = font_quit.render('Ende', True, WHITE)
             else:
-                font_start = pg.font.Font('font/font.ttf', 72)
+                font_start = pg.font.Font(os.path.join(GAME_FOLDER, 'font', 'font.ttf'), 72)
                 img_start = font_start.render('Start', True, WHITE)
-                font_quit = pg.font.Font('font/font.ttf', 92)
+                font_quit = pg.font.Font(os.path.join(GAME_FOLDER, 'font', 'font.ttf'), 92)
                 img_quit = font_quit.render('Ende', True, WHITE)
 
             # Events im Menü
@@ -199,7 +199,7 @@ class Game:
                         if selected['Start'] is True:
                             pg.mixer.music.fadeout(1000)
                             game.new()
-                            pg.mixer.music.load('music/menu.mp3')
+                            pg.mixer.music.load(os.path.join(GAME_FOLDER, 'music', 'menu.mp3'))
                             pg.mixer.music.play(-1, 0.0)
                             pg.mixer.music.set_volume(.5)
                         else:

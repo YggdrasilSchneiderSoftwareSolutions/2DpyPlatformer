@@ -1,8 +1,8 @@
 # Sprite classes for platform game
 from abc import ABCMeta, abstractmethod
 import pygame as pg
-import utils
 from settings import *
+from utils import *
 vec = pg.math.Vector2
 
 
@@ -10,31 +10,31 @@ class Player(pg.sprite.Sprite):
     def __init__(self, game):
         pg.sprite.Sprite.__init__(self)
         self.game = game
-        self.idle_images = [utils.load_image('tiles/player/pl_idle_00.png'),
-                            utils.load_image('tiles/player/pl_idle_01.png'),
-                            utils.load_image('tiles/player/pl_idle_02.png'),
-                            utils.load_image('tiles/player/pl_idle_03.png'),
-                            utils.load_image('tiles/player/pl_idle_04.png'),
-                            utils.load_image('tiles/player/pl_idle_05.png'),
-                            utils.load_image('tiles/player/pl_idle_06.png'),
-                            utils.load_image('tiles/player/pl_idle_07.png'),
-                            utils.load_image('tiles/player/pl_idle_08.png'),
-                            utils.load_image('tiles/player/pl_idle_09.png'),
-                            utils.load_image('tiles/player/pl_idle_10.png')]
-        self.run_images = [utils.load_image('tiles/player/player_run_00.png'),
-                           utils.load_image('tiles/player/player_run_01.png'),
-                           utils.load_image('tiles/player/player_run_02.png'),
-                           utils.load_image('tiles/player/player_run_03.png'),
-                           utils.load_image('tiles/player/player_run_04.png'),
-                           utils.load_image('tiles/player/player_run_05.png'),
-                           utils.load_image('tiles/player/player_run_06.png'),
-                           utils.load_image('tiles/player/player_run_07.png'),
-                           utils.load_image('tiles/player/player_run_08.png'),
-                           utils.load_image('tiles/player/player_run_09.png'),
-                           utils.load_image('tiles/player/player_run_10.png')]
-        self.jump_image = utils.load_image('tiles/player/pl_jump.png')
-        self.fall_image = utils.load_image('tiles/player/pl_fall.png')
-        self.killed_image = utils.load_image('tiles/player/pl_death.png')
+        self.idle_images = [load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'pl_idle_00.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'pl_idle_01.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'pl_idle_02.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'pl_idle_03.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'pl_idle_04.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'pl_idle_05.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'pl_idle_06.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'pl_idle_07.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'pl_idle_08.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'pl_idle_09.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'pl_idle_10.png'))]
+        self.run_images = [load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'player_run_00.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'player_run_01.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'player_run_02.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'player_run_03.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'player_run_04.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'player_run_05.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'player_run_06.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'player_run_07.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'player_run_08.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'player_run_09.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'player_run_10.png'))]
+        self.jump_image = load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'pl_jump.png'))
+        self.fall_image = load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'pl_fall.png'))
+        self.killed_image = load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'pl_death.png'))
         self.image = self.idle_images[0]
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH / 2, HEIGHT / 2)
@@ -74,7 +74,7 @@ class Player(pg.sprite.Sprite):
         if self.onGround:
             self.onGround = False
             self.gravity = -PLAYER_JUMP
-            utils.play_sound('jump')
+            play_sound('jump')
 
     def jump_cut(self):
         if self.onGround is False:
@@ -125,10 +125,10 @@ class Player(pg.sprite.Sprite):
                     if self.rect.bottom == enemy.rect.top or self.rect.bottom - enemy.rect.top <= 10:
                         self.gravity = -3  # Rückstoß
                         enemy.killed = True
-                        utils.play_sound('kill')
+                        play_sound('kill')
                     else:  # Enemy hat uns getroffen -> Schaden
                         self.health -= enemy.damage
-                        utils.play_sound('hurt')
+                        play_sound('hurt')
 
     def update(self):
         # game over
@@ -137,7 +137,7 @@ class Player(pg.sprite.Sprite):
             if not self.game_over:  # Damit Sound nur 1x abgespielt wird
                 self.game_over = True
                 pg.mixer.music.stop()
-                utils.play_sound('death')
+                play_sound('death')
             self.image = self.killed_image
             if self.num_dead_frames == FPS * 5:  # ca. 5 Sekunden
                 self.game.playing = False
@@ -267,29 +267,29 @@ class Enemy(pg.sprite.Sprite, metaclass=ABCMeta):
 class EnemyPinky(Enemy):
     def __init__(self, x, y, game):
         Enemy.__init__(self, x, y, game)
-        self.idle_images = [utils.load_image('tiles/enemies/pinky/pink_idle_00.png'),
-                            utils.load_image('tiles/enemies/pinky/pink_idle_01.png'),
-                            utils.load_image('tiles/enemies/pinky/pink_idle_02.png'),
-                            utils.load_image('tiles/enemies/pinky/pink_idle_03.png'),
-                            utils.load_image('tiles/enemies/pinky/pink_idle_04.png'),
-                            utils.load_image('tiles/enemies/pinky/pink_idle_05.png'),
-                            utils.load_image('tiles/enemies/pinky/pink_idle_06.png'),
-                            utils.load_image('tiles/enemies/pinky/pink_idle_07.png'),
-                            utils.load_image('tiles/enemies/pinky/pink_idle_08.png'),
-                            utils.load_image('tiles/enemies/pinky/pink_idle_09.png'),
-                            utils.load_image('tiles/enemies/pinky/pink_idle_10.png')]
-        self.run_images = [utils.load_image('tiles/enemies/pinky/pink_run_00.png'),
-                           utils.load_image('tiles/enemies/pinky/pink_run_01.png'),
-                           utils.load_image('tiles/enemies/pinky/pink_run_02.png'),
-                           utils.load_image('tiles/enemies/pinky/pink_run_03.png'),
-                           utils.load_image('tiles/enemies/pinky/pink_run_04.png'),
-                           utils.load_image('tiles/enemies/pinky/pink_run_05.png'),
-                           utils.load_image('tiles/enemies/pinky/pink_run_06.png'),
-                           utils.load_image('tiles/enemies/pinky/pink_run_07.png'),
-                           utils.load_image('tiles/enemies/pinky/pink_run_08.png'),
-                           utils.load_image('tiles/enemies/pinky/pink_run_09.png'),
-                           utils.load_image('tiles/enemies/pinky/pink_run_10.png')]
-        self.killed_image = utils.load_image('tiles/enemies/pinky/pink_death.png')
+        self.idle_images = [load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'pinky', 'pink_idle_00.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'pinky', 'pink_idle_01.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'pinky', 'pink_idle_02.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'pinky', 'pink_idle_03.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'pinky', 'pink_idle_04.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'pinky', 'pink_idle_05.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'pinky', 'pink_idle_06.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'pinky', 'pink_idle_07.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'pinky', 'pink_idle_08.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'pinky', 'pink_idle_09.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'pinky', 'pink_idle_10.png'))]
+        self.run_images = [load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'pinky', 'pink_run_00.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'pinky', 'pink_run_01.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'pinky', 'pink_run_02.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'pinky', 'pink_run_03.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'pinky', 'pink_run_04.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'pinky', 'pink_run_05.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'pinky', 'pink_run_06.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'pinky', 'pink_run_07.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'pinky', 'pink_run_08.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'pinky', 'pink_run_09.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'pinky', 'pink_run_10.png'))]
+        self.killed_image = load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'pinky', 'pink_death.png'))
         self.image = self.idle_images[0]
 
     def get_image(self):
@@ -307,41 +307,41 @@ class EnemyPinky(Enemy):
 
         # Gehen / Stehen
         if self.move_direction['left'] is False and self.move_direction['right'] is False:
-            self.image = utils.get_image_for_frames(self.num_frames, self.idle_images)
+            self.image = get_image_for_frames(self.num_frames, self.idle_images)
         else:
             if self.move_direction['left'] is True:
-                self.image = pg.transform.flip(utils.get_image_for_frames(self.num_frames,
+                self.image = pg.transform.flip(get_image_for_frames(self.num_frames,
                                                                           self.run_images), True, False)
             else:
-                self.image = utils.get_image_for_frames(self.num_frames, self.run_images)
+                self.image = get_image_for_frames(self.num_frames, self.run_images)
 
 
 class EnemyMasked(Enemy):
     def __init__(self, x, y, game):
         Enemy.__init__(self, x, y, game)
-        self.idle_images = [utils.load_image('tiles/enemies/masked/masked_idle_00.png'),
-                            utils.load_image('tiles/enemies/masked/masked_idle_01.png'),
-                            utils.load_image('tiles/enemies/masked/masked_idle_02.png'),
-                            utils.load_image('tiles/enemies/masked/masked_idle_03.png'),
-                            utils.load_image('tiles/enemies/masked/masked_idle_04.png'),
-                            utils.load_image('tiles/enemies/masked/masked_idle_05.png'),
-                            utils.load_image('tiles/enemies/masked/masked_idle_06.png'),
-                            utils.load_image('tiles/enemies/masked/masked_idle_07.png'),
-                            utils.load_image('tiles/enemies/masked/masked_idle_08.png'),
-                            utils.load_image('tiles/enemies/masked/masked_idle_09.png'),
-                            utils.load_image('tiles/enemies/masked/masked_idle_10.png')]
-        self.run_images = [utils.load_image('tiles/enemies/masked/masked_run_00.png'),
-                           utils.load_image('tiles/enemies/masked/masked_run_01.png'),
-                           utils.load_image('tiles/enemies/masked/masked_run_02.png'),
-                           utils.load_image('tiles/enemies/masked/masked_run_03.png'),
-                           utils.load_image('tiles/enemies/masked/masked_run_04.png'),
-                           utils.load_image('tiles/enemies/masked/masked_run_05.png'),
-                           utils.load_image('tiles/enemies/masked/masked_run_06.png'),
-                           utils.load_image('tiles/enemies/masked/masked_run_07.png'),
-                           utils.load_image('tiles/enemies/masked/masked_run_08.png'),
-                           utils.load_image('tiles/enemies/masked/masked_run_09.png'),
-                           utils.load_image('tiles/enemies/masked/masked_run_10.png')]
-        self.killed_image = utils.load_image('tiles/enemies/masked/masked_death.png')
+        self.idle_images = [load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'masked', 'masked_idle_00.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'masked', 'masked_idle_01.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'masked', 'masked_idle_02.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'masked', 'masked_idle_03.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'masked', 'masked_idle_04.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'masked', 'masked_idle_05.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'masked', 'masked_idle_06.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'masked', 'masked_idle_07.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'masked', 'masked_idle_08.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'masked', 'masked_idle_09.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'masked', 'masked_idle_10.png'))]
+        self.run_images = [load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'masked', 'masked_run_00.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'masked', 'masked_run_01.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'masked', 'masked_run_02.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'masked', 'masked_run_03.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'masked', 'masked_run_04.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'masked', 'masked_run_05.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'masked', 'masked_run_06.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'masked', 'masked_run_07.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'masked', 'masked_run_08.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'masked', 'masked_run_09.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'masked', 'masked_run_10.png'))]
+        self.killed_image = load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'masked', 'masked_death.png'))
         self.image = self.idle_images[0]
         self.visibility = -300
         self.damage = 20
@@ -362,13 +362,13 @@ class EnemyMasked(Enemy):
 
         # Gehen / Stehen
         if self.move_direction['left'] is False and self.move_direction['right'] is False:
-            self.image = utils.get_image_for_frames(self.num_frames, self.idle_images)
+            self.image = get_image_for_frames(self.num_frames, self.idle_images)
         else:
             if self.move_direction['left'] is True:
-                self.image = pg.transform.flip(utils.get_image_for_frames(self.num_frames,
+                self.image = pg.transform.flip(get_image_for_frames(self.num_frames,
                                                                           self.run_images), True, False)
             else:
-                self.image = utils.get_image_for_frames(self.num_frames, self.run_images)
+                self.image = get_image_for_frames(self.num_frames, self.run_images)
 
 
 class Tile(pg.sprite.Sprite):
@@ -387,21 +387,21 @@ class Tile(pg.sprite.Sprite):
 class Brick(Tile):
     def __init__(self, x, y):
         Tile.__init__(self, x, y)
-        self.image = utils.load_image('tiles/brick1.png')
+        self.image = load_image(os.path.join(GAME_FOLDER, 'tiles', 'brick1.png'))
         self.solid = True
 
 
 class Block(Tile):
     def __init__(self, x, y):
         Tile.__init__(self, x, y)
-        self.image = utils.load_image('tiles/block1.png')
+        self.image = load_image(os.path.join(GAME_FOLDER, 'tiles', 'block1.png'))
         self.solid = True
 
 
 class Ground(Tile):
     def __init__(self, x, y):
         Tile.__init__(self, x, y)
-        self.image = utils.load_image('tiles/ground1.png')
+        self.image = load_image(os.path.join(GAME_FOLDER, 'tiles', 'ground1.png'))
         self.solid = True
 
 
@@ -427,16 +427,16 @@ class Coin(Collectible):
     def __init__(self, x, y, player):
         Collectible.__init__(self, x, y, player)
         self.num_frames = 0
-        self.rotating_images = [utils.load_image('tiles/coin_00.png'),
-                                utils.load_image('tiles/coin_01.png'),
-                                utils.load_image('tiles/coin_02.png'),
-                                utils.load_image('tiles/coin_03.png'),
-                                utils.load_image('tiles/coin_04.png'),
-                                utils.load_image('tiles/coin_05.png')]
+        self.rotating_images = [load_image(os.path.join(GAME_FOLDER, 'tiles', 'coin_00.png')),
+                                load_image(os.path.join(GAME_FOLDER, 'tiles', 'coin_01.png')),
+                                load_image(os.path.join(GAME_FOLDER, 'tiles', 'coin_02.png')),
+                                load_image(os.path.join(GAME_FOLDER, 'tiles', 'coin_03.png')),
+                                load_image(os.path.join(GAME_FOLDER, 'tiles', 'coin_04.png')),
+                                load_image(os.path.join(GAME_FOLDER, 'tiles', 'coin_05.png'))]
         self.image = self.rotating_images[0]
 
     def on_collect(self):
-        utils.play_sound('coin')
+        play_sound('coin')
         self.player.coins += 1
 
     def get_image(self):  # TODO: in Game auslagern
@@ -444,7 +444,7 @@ class Coin(Collectible):
         if self.num_frames == FPS:
             self.num_frames = 0
 
-        self.image = utils.get_image_for_frames(self.num_frames, self.rotating_images)
+        self.image = get_image_for_frames(self.num_frames, self.rotating_images)
 
     def update(self):
         self.get_image()
@@ -453,28 +453,28 @@ class Coin(Collectible):
 class Strawberry(Collectible):
     def __init__(self, x, y, player):
         Collectible.__init__(self, x, y, player)
-        self.image = utils.load_image('tiles/strawberry.png')
+        self.image = load_image(os.path.join(GAME_FOLDER, 'tiles', 'strawberry.png'))
 
     def on_collect(self):
-        utils.play_sound('collect')
+        play_sound('collect')
         self.player.health += 20
 
 
 class Banana(Collectible):
     def __init__(self, x, y, player):
         Collectible.__init__(self, x, y, player)
-        self.image = utils.load_image('tiles/banana.png')
+        self.image = load_image(os.path.join(GAME_FOLDER, 'tiles', 'banana.png'))
 
     def on_collect(self):
-        utils.play_sound('collect')
+        play_sound('collect')
         self.player.health += 50
 
 
 class Cherry(Collectible):
     def __init__(self, x, y, player):
         Collectible.__init__(self, x, y, player)
-        self.image = utils.load_image('tiles/cherry.png')
+        self.image = load_image(os.path.join(GAME_FOLDER, 'tiles', 'cherry.png'))
 
     def on_collect(self):
-        utils.play_sound('collect')
+        play_sound('collect')
         self.player.health += 10
