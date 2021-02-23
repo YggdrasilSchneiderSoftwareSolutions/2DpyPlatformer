@@ -45,10 +45,10 @@ def init_sounds():
     SOUNDS['death'] = pygame.mixer.Sound(os.path.join(GAME_FOLDER, 'sounds', 'death.wav'))
     SOUNDS['collect'] = pygame.mixer.Sound(os.path.join(GAME_FOLDER, 'sounds', 'collect.wav'))
     SOUNDS['won'] = pygame.mixer.Sound(os.path.join(GAME_FOLDER, 'sounds', 'won.wav'))
+    SOUNDS['shot'] = pygame.mixer.Sound(os.path.join(GAME_FOLDER, 'sounds', 'shot.wav'))
 
 
 def play_sound(name):
-    return
     global SOUNDS
     sound = SOUNDS[name]
     if sound is not None:

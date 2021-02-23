@@ -135,6 +135,12 @@ class Player(pg.sprite.Sprite):
                         self.health -= enemy.damage
                         play_sound('hurt')
 
+        bullet_hits = pg.sprite.spritecollide(self, self.game.bullets, False)
+        if bullet_hits:
+            for bullet in bullet_hits:
+                self.health -= bullet.damage
+                play_sound('hurt')
+
     def update(self):
         # game over
         if self.health <= 0:
@@ -213,13 +219,12 @@ class Enemy(pg.sprite.Sprite, metaclass=ABCMeta):
     def update(self):
         is_visible, distance_x = self.player_is_visible()
         if is_visible is True:
-            player_direction_left = distance_x < 0
-            can_move = self.check_collision(player_direction_left)
-            if player_direction_left and can_move:  # Player ist links
+            can_move = self.check_collision()
+            if distance_x < 0 and can_move:  # Player ist links
                 self.rect.x -= self.acceleration
                 self.move_direction['left'] = True
                 self.move_direction['right'] = False
-            elif not player_direction_left and can_move:  # Player ist rechts
+            elif distance_x > 0 and can_move:  # Player ist rechts
                 self.rect.x += self.acceleration
                 self.move_direction['left'] = False
                 self.move_direction['right'] = True
@@ -254,7 +259,7 @@ class Enemy(pg.sprite.Sprite, metaclass=ABCMeta):
             return True, player_distance_x
         return False, None
 
-    def check_collision(self, player_dir_left):
+    def check_collision(self):
         wall_hits = pg.sprite.spritecollide(self, self.game.platforms, False)
         if wall_hits:
             return False
@@ -327,7 +332,7 @@ class EnemyPinky(Enemy):
         else:
             if self.move_direction['left'] is True:
                 self.image = pg.transform.flip(get_image_for_frames(self.num_frames,
-                                                                          self.run_images), True, False)
+                                                                    self.run_images), True, False)
             else:
                 self.image = get_image_for_frames(self.num_frames, self.run_images)
 
@@ -382,9 +387,118 @@ class EnemyMasked(Enemy):
         else:
             if self.move_direction['left'] is True:
                 self.image = pg.transform.flip(get_image_for_frames(self.num_frames,
-                                                                          self.run_images), True, False)
+                                                                    self.run_images), True, False)
             else:
                 self.image = get_image_for_frames(self.num_frames, self.run_images)
+
+
+class EnemyVirtual(Enemy):
+    def __init__(self, x, y, game):
+        Enemy.__init__(self, x, y, game)
+        self.idle_images = [load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'virtual', 'virtual_idle_00.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'virtual', 'virtual_idle_01.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'virtual', 'virtual_idle_02.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'virtual', 'virtual_idle_03.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'virtual', 'virtual_idle_04.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'virtual', 'virtual_idle_05.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'virtual', 'virtual_idle_06.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'virtual', 'virtual_idle_07.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'virtual', 'virtual_idle_08.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'virtual', 'virtual_idle_09.png')),
+                            load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'virtual', 'virtual_idle_10.png'))]
+        self.run_images = [load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'virtual', 'virtual_run_00.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'virtual', 'virtual_run_01.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'virtual', 'virtual_run_02.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'virtual', 'virtual_run_03.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'virtual', 'virtual_run_04.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'virtual', 'virtual_run_05.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'virtual', 'virtual_run_06.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'virtual', 'virtual_run_07.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'virtual', 'virtual_run_08.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'virtual', 'virtual_run_09.png')),
+                           load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'virtual', 'virtual_run_10.png'))]
+        self.killed_image = load_image(os.path.join(GAME_FOLDER, 'tiles', 'enemies', 'virtual', 'virtual_death.png'))
+        self.image = self.idle_images[0]
+        self.visibility = -400
+        self.damage = 20
+        self.acceleration = 5
+        self.cooldown_shot = 300
+        self.last_shot_time = pg.time.get_ticks()
+
+    def update(self):
+        is_visible, distance_x = self.player_is_visible()
+        if is_visible is True:
+            self.shoot()
+            can_move = self.check_collision()
+            if distance_x < 0 and can_move:  # Player ist links
+                self.rect.x -= self.acceleration
+                self.move_direction['left'] = True
+                self.move_direction['right'] = False
+            elif distance_x > 0 and can_move:  # Player ist rechts
+                self.rect.x += self.acceleration
+                self.move_direction['left'] = False
+                self.move_direction['right'] = True
+            else:  # Hinderniss, stehen bleiben
+                self.move_direction['left'] = False
+                self.move_direction['right'] = False
+        else:  # zurückbewegen, wenn Player nicht mehr sichtbar
+            if self.rect.x > self.initial_pos_x:
+                self.rect.x -= self.acceleration
+                self.move_direction['left'] = True
+                self.move_direction['right'] = False
+            elif self.rect.x < self.initial_pos_x:
+                self.rect.x += self.acceleration
+                self.move_direction['left'] = False
+                self.move_direction['right'] = True
+
+        # Ausgangsposition, keine Bewegung mehr
+        if self.rect.x == self.initial_pos_x:
+            self.move_direction['left'] = False
+            self.move_direction['right'] = False
+
+        self.get_image()
+        self.x = self.rect.x / TILESIZE
+        self.y = self.rect.y / TILESIZE
+
+    def get_image(self):
+        # Tot
+        if self.killed:
+            self.num_dead_frames += 1
+            self.image = self.killed_image
+            if self.num_dead_frames == 10:
+                self.kill()
+            return
+
+        self.num_frames += 1  # TODO: in Methode der Superklasse auslagern
+        if self.num_frames == FPS:
+            self.num_frames = 0
+
+        # Gehen / Stehen
+        if self.move_direction['left'] is False and self.move_direction['right'] is False:
+            self.image = get_image_for_frames(self.num_frames, self.idle_images)
+        else:
+            if self.move_direction['left'] is True:
+                self.image = pg.transform.flip(get_image_for_frames(self.num_frames,
+                                                                    self.run_images), True, False)
+            else:
+                self.image = get_image_for_frames(self.num_frames, self.run_images)
+
+    def shoot(self):
+        # schiessen, wenn 0,3 sec seit dem letzten Schuss vergangen sind
+        now = pg.time.get_ticks()
+        if now - self.last_shot_time >= self.cooldown_shot:
+            bullet = None
+            bullet_coord = vec(self.rect.centerx / TILESIZE, self.rect.centery / TILESIZE)
+            if self.move_direction['left'] is True:
+                bullet = Shot(bullet_coord.x, bullet_coord.y, 'left', self.game)
+            elif self.move_direction['right'] is True:
+                bullet = Shot(bullet_coord.x, bullet_coord.y, 'right', self.game)
+
+            if bullet is not None:
+                self.game.bullets.add(bullet)
+                self.game.all_sprites.add(bullet)
+                self.last_shot_time = now
+                play_sound('shot')
 
 
 class Tile(pg.sprite.Sprite):
@@ -494,3 +608,35 @@ class Cherry(Collectible):
     def on_collect(self):
         play_sound('collect')
         self.player.health += 10
+
+
+class Shot(pg.sprite.Sprite):
+    def __init__(self, x, y, direction, game):
+        pg.sprite.Sprite.__init__(self)
+        self.image = pg.Surface((10, 10))
+        self.image.fill(WHITE)
+        self.rect = self.image.get_rect()
+        # Rect x, y muss * TILESIZE, damit Position mit dem Enemy gleich ist
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE
+        self.direction = direction
+        self.game = game
+        self.damage = 20
+        self.acceleration = 7
+
+    def update(self):
+        if not self.collide_with_platform():
+            if self.direction == 'left':  # TODO evtl über boolean
+                self.rect.x -= self.acceleration
+            else:
+                self.rect.x += self.acceleration
+
+            # hat Spielfeld verlassen
+            if self.rect.x > self.game.map.width or self.rect.x < 0:
+                self.kill()
+        else:
+            self.kill()
+
+    def collide_with_platform(self):
+        # doKill = True falls Wand zerstört werden kann...
+        return pg.sprite.spritecollide(self, self.game.platforms, False)

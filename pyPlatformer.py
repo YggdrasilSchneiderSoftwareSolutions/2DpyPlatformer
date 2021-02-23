@@ -31,6 +31,7 @@ class Game:
         self.platforms = None
         self.enemies = None
         self.collectibles = None
+        self.bullets = None
         self.player = None
         self.font_health = pg.font.Font(os.path.join(GAME_FOLDER, 'font', 'font.ttf'), 24)
         self.img_health = self.font_health.render('Health: ', True, WHITE)
@@ -61,6 +62,7 @@ class Game:
         self.platforms = pg.sprite.Group()
         self.enemies = pg.sprite.Group()
         self.collectibles = pg.sprite.Group()
+        self.bullets = pg.sprite.Group()
         self.player = Player(self)
         self.all_sprites.add(self.player)
 
@@ -94,6 +96,9 @@ class Game:
                     self.enemies.add(tile_sprite)
                 elif tile == "M":  # Enemy Masked
                     tile_sprite = EnemyMasked(col, row, self)
+                    self.enemies.add(tile_sprite)
+                elif tile == "V":  # Enemy Virtual
+                    tile_sprite = EnemyVirtual(col, row, self)
                     self.enemies.add(tile_sprite)
                 else:  # Sky
                     tile_sprite = Sky(col, row)
