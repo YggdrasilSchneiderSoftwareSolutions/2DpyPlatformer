@@ -140,6 +140,7 @@ class Player(pg.sprite.Sprite):
         if bullet_hits:
             for bullet in bullet_hits:
                 self.health -= bullet.damage
+                bullet.kill()
                 play_sound('hurt')
 
     def update(self):
@@ -429,7 +430,8 @@ class EnemyVirtual(Enemy):
     def update(self):
         is_visible, distance_x = self.player_is_visible()
         if is_visible is True:
-            self.shoot()
+            player_direction = 'left' if distance_x < 0 else 'right'
+            self.shoot(player_direction)
             can_move = self.check_collision()
             if distance_x < 0 and can_move:  # Player ist links
                 self.rect.x -= self.acceleration
@@ -484,22 +486,16 @@ class EnemyVirtual(Enemy):
             else:
                 self.image = get_image_for_frames(self.num_frames, self.run_images)
 
-    def shoot(self):
+    def shoot(self, direction):
         # schiessen, wenn 0,3 sec seit dem letzten Schuss vergangen sind
         now = pg.time.get_ticks()
         if now - self.last_shot_time >= self.cooldown_shot:
-            bullet = None
             bullet_coord = vec(self.rect.centerx / TILESIZE, self.rect.centery / TILESIZE)
-            if self.move_direction['left'] is True:
-                bullet = Shot(bullet_coord.x, bullet_coord.y, 'left', self.game)
-            elif self.move_direction['right'] is True:
-                bullet = Shot(bullet_coord.x, bullet_coord.y, 'right', self.game)
-
-            if bullet is not None:
-                self.game.bullets.add(bullet)
-                self.game.all_sprites.add(bullet)
-                self.last_shot_time = now
-                play_sound('shot')
+            bullet = Shot(bullet_coord.x, bullet_coord.y, direction, self.game)
+            self.game.bullets.add(bullet)
+            self.game.all_sprites.add(bullet)
+            self.last_shot_time = now
+            play_sound('shot')
 
 
 class Tile(pg.sprite.Sprite):

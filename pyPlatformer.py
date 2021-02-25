@@ -204,6 +204,12 @@ class Game:
                     pg.mixer.music.set_volume(.5)
                 else:
                     game.new(self.level_index)
+            elif self.player is not None and self.player.game_over:
+                self.level_index = 0
+                self.player = None
+                pg.mixer.music.load(os.path.join(GAME_FOLDER, 'music', 'menu.mp3'))
+                pg.mixer.music.play(-1, 0.0)
+                pg.mixer.music.set_volume(.5)
 
             if selected['Start'] is True:
                 font_start = pg.font.Font(os.path.join(GAME_FOLDER, 'font', 'font.ttf'), 92)
@@ -231,7 +237,7 @@ class Game:
                     if event.key == pg.K_RETURN:
                         if selected['Start'] is True:
                             pg.mixer.music.fadeout(1000)
-                            game.new(0)  # erstes Level laden
+                            game.new(self.level_index)  # erstes Level laden
                         else:
                             pg.mixer.music.fadeout(1000)
                             self.running = False
