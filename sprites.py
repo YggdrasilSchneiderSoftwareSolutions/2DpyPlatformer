@@ -7,7 +7,7 @@ vec = pg.math.Vector2
 
 
 class Player(pg.sprite.Sprite):
-    def __init__(self, game):
+    def __init__(self, x, y, game):
         pg.sprite.Sprite.__init__(self)
         self.game = game
         self.idle_images = [load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'pl_idle_00.png')),
@@ -37,8 +37,9 @@ class Player(pg.sprite.Sprite):
         self.killed_image = load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'pl_death.png'))
         self.image = self.idle_images[0]
         self.rect = self.image.get_rect()
-        self.rect.center = (WIDTH / 2, HEIGHT / 2)
-        self.pos = vec(WIDTH / 2, HEIGHT / 2)
+        self.rect.x = x * TILESIZE
+        self.rect.y = y * TILESIZE
+        self.pos = vec(x, y)
         self.onGround = False
         self.movement = [0, 0]
         self.gravity = 0
@@ -544,9 +545,9 @@ class Sky(Tile):
 
 
 class Collectible(Tile, metaclass=ABCMeta):
-    def __init__(self, x, y, player):
+    def __init__(self, x, y, game):
         Tile.__init__(self, x, y)
-        self.player = player
+        self.game = game
 
     @abstractmethod
     def on_collect(self):
@@ -554,8 +555,8 @@ class Collectible(Tile, metaclass=ABCMeta):
 
 
 class Coin(Collectible):
-    def __init__(self, x, y, player):
-        Collectible.__init__(self, x, y, player)
+    def __init__(self, x, y, game):
+        Collectible.__init__(self, x, y, game)
         self.num_frames = 0
         self.rotating_images = [load_image(os.path.join(GAME_FOLDER, 'tiles', 'coin_00.png')),
                                 load_image(os.path.join(GAME_FOLDER, 'tiles', 'coin_01.png')),
@@ -567,7 +568,7 @@ class Coin(Collectible):
 
     def on_collect(self):
         play_sound('coin')
-        self.player.coins += 1
+        self.game.player.coins += 1
 
     def get_image(self):  # TODO: in Game auslagern
         self.num_frames += 1
@@ -581,33 +582,33 @@ class Coin(Collectible):
 
 
 class Strawberry(Collectible):
-    def __init__(self, x, y, player):
-        Collectible.__init__(self, x, y, player)
+    def __init__(self, x, y, game):
+        Collectible.__init__(self, x, y, game)
         self.image = load_image(os.path.join(GAME_FOLDER, 'tiles', 'strawberry.png'))
 
     def on_collect(self):
         play_sound('collect')
-        self.player.health += 20
+        self.game.player.health += 20
 
 
 class Banana(Collectible):
-    def __init__(self, x, y, player):
-        Collectible.__init__(self, x, y, player)
+    def __init__(self, x, y, game):
+        Collectible.__init__(self, x, y, game)
         self.image = load_image(os.path.join(GAME_FOLDER, 'tiles', 'banana.png'))
 
     def on_collect(self):
         play_sound('collect')
-        self.player.health += 50
+        self.game.player.health += 50
 
 
 class Cherry(Collectible):
-    def __init__(self, x, y, player):
-        Collectible.__init__(self, x, y, player)
+    def __init__(self, x, y, game):
+        Collectible.__init__(self, x, y, game)
         self.image = load_image(os.path.join(GAME_FOLDER, 'tiles', 'cherry.png'))
 
     def on_collect(self):
         play_sound('collect')
-        self.player.health += 10
+        self.game.player.health += 10
 
 
 class Shot(pg.sprite.Sprite):

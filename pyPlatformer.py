@@ -63,13 +63,13 @@ class Game:
         self.enemies = pg.sprite.Group()
         self.collectibles = pg.sprite.Group()
         self.bullets = pg.sprite.Group()
-        self.player = Player(self)
-        self.all_sprites.add(self.player)
+        self.player = None
 
         self.camera = Camera(self.map.width, self.map.height)
 
         for row, tiles in enumerate(self.map.data):
             for col, tile in enumerate(tiles):
+                tile_sprite = None
                 if tile == ".":  # Sky
                     tile_sprite = Sky(col, row)
                 elif tile == "#":  # Block
@@ -79,19 +79,19 @@ class Game:
                 elif tile == "B":  # Brick
                     tile_sprite = Brick(col, row)
                 elif tile == "o":  # Coin
-                    tile_sprite = Coin(col, row, self.player)
+                    tile_sprite = Coin(col, row, self)
                     self.collectibles.add(tile_sprite)
                     self.coin_count += 1
                 elif tile == "S":  # Strawberry
-                    tile_sprite = Strawberry(col, row, self.player)
+                    tile_sprite = Strawberry(col, row, self)
                     self.collectibles.add(tile_sprite)
                 elif tile == "(":  # Banana
-                    tile_sprite = Banana(col, row, self.player)
+                    tile_sprite = Banana(col, row, self)
                     self.collectibles.add(tile_sprite)
                 elif tile == "C":  # Cherry
-                    tile_sprite = Cherry(col, row, self.player)
+                    tile_sprite = Cherry(col, row, self)
                     self.collectibles.add(tile_sprite)
-                elif tile == "P":  # Enemy Pinky
+                elif tile == "E":  # Enemy Pinky
                     tile_sprite = EnemyPinky(col, row, self)
                     self.enemies.add(tile_sprite)
                 elif tile == "M":  # Enemy Masked
@@ -100,6 +100,9 @@ class Game:
                 elif tile == "V":  # Enemy Virtual
                     tile_sprite = EnemyVirtual(col, row, self)
                     self.enemies.add(tile_sprite)
+                elif tile == "P":  # Player - wird nicht als Tile behandelt
+                    self.player = Player(col, row, self)
+                    self.all_sprites.add(self.player)
                 else:  # Sky
                     tile_sprite = Sky(col, row)
 
