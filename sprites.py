@@ -206,7 +206,7 @@ class Player(pg.sprite.Sprite):
             self.rect.x = self.game.map.width - TILESIZE
 
         # Loch im Boden
-        if self.pos.y > self.game.map.height:
+        if self.pos.y > self.game.map.height + TILESIZE:
             self.health = 0
 
 
