@@ -32,6 +32,7 @@ class Game:
         self.enemies = None
         self.collectibles = None
         self.bullets = None
+        self.water = None
         self.player = None
         self.font_health = pg.font.Font(os.path.join(GAME_FOLDER, 'font', 'font.ttf'), 24)
         self.img_health = self.font_health.render('Health: ', True, WHITE)
@@ -63,6 +64,7 @@ class Game:
         self.enemies = pg.sprite.Group()
         self.collectibles = pg.sprite.Group()
         self.bullets = pg.sprite.Group()
+        self.water = pg.sprite.Group()
         self.player = None
 
         self.camera = Camera(self.map.width, self.map.height)
@@ -103,6 +105,12 @@ class Game:
                 elif tile == "P":  # Player - wird nicht als Tile behandelt
                     self.player = Player(col, row, self)
                     self.all_sprites.add(self.player)
+                elif tile == "w":  # Wasser oben
+                    tile_sprite = WaterTop(col, row)
+                    self.water.add(tile_sprite)
+                elif tile == "W":  # Wasser unten
+                    tile_sprite = WaterBottom(col, row)
+                    self.water.add(tile_sprite)
                 else:  # Sky
                     tile_sprite = Sky(col, row)
 

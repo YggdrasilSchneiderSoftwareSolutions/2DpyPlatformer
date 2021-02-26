@@ -46,6 +46,7 @@ def init_sounds():
     SOUNDS['collect'] = pygame.mixer.Sound(os.path.join(GAME_FOLDER, 'sounds', 'collect.wav'))
     SOUNDS['won'] = pygame.mixer.Sound(os.path.join(GAME_FOLDER, 'sounds', 'won.wav'))
     SOUNDS['shot'] = pygame.mixer.Sound(os.path.join(GAME_FOLDER, 'sounds', 'shot.wav'))
+    SOUNDS['drown'] = pygame.mixer.Sound(os.path.join(GAME_FOLDER, 'sounds', 'drown.wav'))
 
 
 def play_sound(name):

@@ -51,6 +51,8 @@ class Player(pg.sprite.Sprite):
         self.won = False
         self.num_won_frames = 0
         self.last_movement_left = False
+        self.cooldown_dive = 500
+        self.last_dive_time = pg.time.get_ticks()
 
     def get_image(self):
         self.num_frames += 1
@@ -143,6 +145,15 @@ class Player(pg.sprite.Sprite):
                 bullet.kill()
                 play_sound('hurt')
 
+    def check_drowning(self):
+        water_hits = pg.sprite.spritecollide(self, self.game.water, False)
+        if water_hits:
+            now = pg.time.get_ticks()
+            if now - self.last_dive_time >= self.cooldown_dive:
+                self.health -= 10
+                play_sound('drown')
+                self.last_dive_time = now
+
     def update(self):
         # game over
         if self.health <= 0:
@@ -182,6 +193,8 @@ class Player(pg.sprite.Sprite):
 
         self.check_enemy_hit()
 
+        self.check_drowning()
+
         self.get_image()
         self.movement = [0, 0]
 
@@ -191,6 +204,10 @@ class Player(pg.sprite.Sprite):
             self.rect.x = 0
         if self.pos.x < 0:
             self.rect.x = self.game.map.width - TILESIZE
+
+        # Loch im Boden
+        if self.pos.y > self.game.map.height:
+            self.health = 0
 
 
 class Enemy(pg.sprite.Sprite, metaclass=ABCMeta):
@@ -487,15 +504,16 @@ class EnemyVirtual(Enemy):
                 self.image = get_image_for_frames(self.num_frames, self.run_images)
 
     def shoot(self, direction):
-        # schiessen, wenn 0,3 sec seit dem letzten Schuss vergangen sind
-        now = pg.time.get_ticks()
-        if now - self.last_shot_time >= self.cooldown_shot:
-            bullet_coord = vec(self.rect.centerx / TILESIZE, self.rect.centery / TILESIZE)
-            bullet = Shot(bullet_coord.x, bullet_coord.y, direction, self.game)
-            self.game.bullets.add(bullet)
-            self.game.all_sprites.add(bullet)
-            self.last_shot_time = now
-            play_sound('shot')
+        if not self.game.player.game_over:
+            # schiessen, wenn 0,3 sec seit dem letzten Schuss vergangen sind
+            now = pg.time.get_ticks()
+            if now - self.last_shot_time >= self.cooldown_shot:
+                bullet_coord = vec(self.rect.centerx / TILESIZE, self.rect.centery / TILESIZE)
+                bullet = Shot(bullet_coord.x, bullet_coord.y, direction, self.game)
+                self.game.bullets.add(bullet)
+                self.game.all_sprites.add(bullet)
+                self.last_shot_time = now
+                play_sound('shot')
 
 
 class Tile(pg.sprite.Sprite):
@@ -530,6 +548,39 @@ class Ground(Tile):
         Tile.__init__(self, x, y)
         self.image = load_image(os.path.join(GAME_FOLDER, 'tiles', 'ground1.png'))
         self.solid = True
+
+
+class Water(Tile):
+    def __init__(self, x, y):
+        Tile.__init__(self, x, y)
+
+
+class WaterBottom(Water):
+    def __init__(self, x, y):
+        Tile.__init__(self, x, y)
+        self.image = load_image(os.path.join(GAME_FOLDER, 'tiles', 'water_bottom.png'))
+
+
+class WaterTop(Water):
+    def __init__(self, x, y):
+        Tile.__init__(self, x, y)
+        self.num_frames = 0
+        self.rotating_images = [load_image(os.path.join(GAME_FOLDER, 'tiles', 'water_top_00.png')),
+                                load_image(os.path.join(GAME_FOLDER, 'tiles', 'water_top_01.png')),
+                                load_image(os.path.join(GAME_FOLDER, 'tiles', 'water_top_02.png')),
+                                load_image(os.path.join(GAME_FOLDER, 'tiles', 'water_top_03.png')),
+                                load_image(os.path.join(GAME_FOLDER, 'tiles', 'water_top_04.png'))]
+        self.image = self.rotating_images[0]
+
+    def get_image(self):
+        self.num_frames += 1
+        if self.num_frames == FPS:
+                self.num_frames = 0
+
+        self.image = get_image_for_frames(self.num_frames, self.rotating_images)
+
+    def update(self):
+        self.get_image()
 
 
 class Sky(Tile):
