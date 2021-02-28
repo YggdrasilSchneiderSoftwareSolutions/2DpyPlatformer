@@ -7,7 +7,7 @@ vec = pg.math.Vector2
 
 
 class Player(pg.sprite.Sprite):
-    def __init__(self, x, y, game):
+    def __init__(self, x, y, game, health=PLAYER_HEALTH):
         pg.sprite.Sprite.__init__(self)
         self.game = game
         self.idle_images = [load_image(os.path.join(GAME_FOLDER, 'tiles', 'player', 'pl_idle_00.png')),
@@ -44,7 +44,7 @@ class Player(pg.sprite.Sprite):
         self.movement = [0, 0]
         self.gravity = 0
         self.coins = 0
-        self.health = PLAYER_HEALTH
+        self.health = health
         self.num_frames = 0
         self.num_dead_frames = 0
         self.game_over = False

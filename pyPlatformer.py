@@ -65,7 +65,6 @@ class Game:
         self.collectibles = pg.sprite.Group()
         self.bullets = pg.sprite.Group()
         self.water = pg.sprite.Group()
-        self.player = None
 
         self.camera = Camera(self.map.width, self.map.height)
 
@@ -103,7 +102,10 @@ class Game:
                     tile_sprite = EnemyVirtual(col, row, self)
                     self.enemies.add(tile_sprite)
                 elif tile == "P":  # Player - wird nicht als Tile behandelt
-                    self.player = Player(col, row, self)
+                    if self.player is not None and self.player.won:  # Health übernehmen, wenn gewonnen
+                        self.player = Player(col, row, self, self.player.health)
+                    else:
+                        self.player = Player(col, row, self)
                     self.all_sprites.add(self.player)
                 elif tile == "w":  # Wasser oben
                     tile_sprite = WaterTop(col, row)
