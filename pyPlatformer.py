@@ -18,7 +18,8 @@ class Game:
         os.environ['SDL_VIDEO_CENTERED'] = '1'
         self.clock = pg.time.Clock()
         # Map laden
-        self.maps = [Map(os.path.join(GAME_FOLDER, 'maps', 'map1.txt')),
+        self.maps = [Map(os.path.join(GAME_FOLDER, 'maps', 'level1.txt')),
+                     Map(os.path.join(GAME_FOLDER, 'maps', 'map1.txt')),
                      Map(os.path.join(GAME_FOLDER, 'maps', 'map2.txt'))]
         self.map = None
         self.camera = None
